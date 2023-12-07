@@ -2,10 +2,9 @@ package fourconnect;
 
 import java.util.Objects;
 
-import static fourconnect.GameConstants.COLUMN_COUNT;
-import static fourconnect.GameConstants.ROW_COUNT;
-
 public class FourConnectGameLogic {
+    public static final int ROW_COUNT = 6;
+    public static final int COLUMN_COUNT = 7;
     private static final String[][] field = new String[ROW_COUNT][COLUMN_COUNT];
     public static String[][] getField() {
         return field;
