@@ -2,18 +2,40 @@ package fourconnect;
 
 import java.util.Objects;
 
-public class FourConnectGameLogic {
-    public static final int ROW_COUNT = 6;
-    public static final int COLUMN_COUNT = 7;
-    private static final String[][] field = new String[ROW_COUNT][COLUMN_COUNT];
+/**
+ * Class that handles the state of the game field and operations with it.
+ */
+public class GameField {
+    private final int numberOfRows;
+    private final int numberOfColumns;
+    private static String[][] field;
+    private static final String SIGN_SEPARATOR = "|";
+    private static final String SIGN_PLACEHOLDER = " ";
+    private static final String WHITESPACE = " ";
+    private static final String NEW_LINE = System.lineSeparator();
+
+    public GameField(int numberOfRows, int numberOfColumns) {
+        this.numberOfRows = numberOfRows;
+        this.numberOfColumns = numberOfColumns;
+        field = new String[numberOfRows][numberOfColumns];
+    }
 
     /**
-     * Getter method for the current state of the field.
+     * Getter method for the number of rows.
      *
-     * @return field in current state.
+     * @return number of rows.
      */
-    public static String[][] getField() {
-        return field;
+    public int getNumberOfRows() {
+        return numberOfRows;
+    }
+
+    /**
+     * Getter method for the number of columns.
+     *
+     * @return number of columns.
+     */
+    public int getNumberOfColumns() {
+        return numberOfColumns;
     }
 
     /**
@@ -23,9 +45,9 @@ public class FourConnectGameLogic {
      * @param checker Sign to be put into the free slot.
      * @return the index of the row, where checker was put to.
      */
-    public static int putCheckerToColumn(int column, String checker) {
+    public int putCheckerToColumn(int column, String checker) {
         // start iterating from the last row index
-        int currentRow = ROW_COUNT - 1;
+        int currentRow = numberOfRows - 1;
         // find first empty slot searching from below
         while (field[currentRow][column] != null) {
             currentRow--;
@@ -44,7 +66,7 @@ public class FourConnectGameLogic {
      * @param checker Sign of the user that was put into the slot.
      * @return {@code true} if there is a vertical line (containing specified slot) of four specified elements in a row. {@code false} otherwise.
      */
-    public static boolean checkForVerticalLines(int column, int row, String checker) {
+    private boolean checkForVerticalLines(int column, int row, String checker) {
         for (int minStartRow = 0; minStartRow <= row; minStartRow++) {
             int startingRow = Math.max(minStartRow, row - 3);
             if (checkConsecutive(startingRow, column, 1, 0, checker)) return true;
@@ -61,7 +83,7 @@ public class FourConnectGameLogic {
      * @param checker Sign of the user that was put into the slot.
      * @return {@code true} if there is a horizontal line (containing specified slot) of four specified elements in a row. {@code false} otherwise.
      */
-    public static boolean checkForHorizontalLines(int column, int row, String checker) {
+    private boolean checkForHorizontalLines(int column, int row, String checker) {
         for (int minStartColumn = 0; minStartColumn <= column; minStartColumn++) {
             int startingColumn = Math.max(minStartColumn, column - 3);
             if (checkConsecutive(row, startingColumn, 0, 1, checker)) return true;
@@ -78,7 +100,7 @@ public class FourConnectGameLogic {
      * @param checker Sign of the user that was put into the slot.
      * @return {@code true} if there is a diagonal line (containing specified slot) of four specified elements in a row. {@code false} otherwise.
      */
-    public static boolean checkForDiagonalLines(int column, int row, String checker) {
+    private boolean checkForDiagonalLines(int column, int row, String checker) {
         // check diagonally (top-left to bottom-right)
         if (row <= column) {
             int rowColumnDifference = row - column;
@@ -111,7 +133,7 @@ public class FourConnectGameLogic {
         } else {
             int columnRowDifference = column - row;
             // iterate over columns, calculating row based on the difference between them
-            for (int startingDiagonalColumn = Math.min(column + 3, COLUMN_COUNT - 1); startingDiagonalColumn >= column; startingDiagonalColumn--) {
+            for (int startingDiagonalColumn = Math.min(column + 3, numberOfColumns - 1); startingDiagonalColumn >= column; startingDiagonalColumn--) {
                 // pass -1 as column increment as column is being iterated backwards
                 if (checkConsecutive(startingDiagonalColumn - columnRowDifference, startingDiagonalColumn, 1, -1, checker)) {
                     return true;
@@ -132,7 +154,7 @@ public class FourConnectGameLogic {
      * @param checker Sign of the user that was put into the slot.
      * @return {@code true} if player has met at least one of winning conditions. {@code false} otherwise.
      */
-    public static boolean hasPlayerWon(int column, int row, String checker) {
+    public boolean hasPlayerWon(int column, int row, String checker) {
         return checkForVerticalLines(column, row, checker) || checkForHorizontalLines(column, row, checker) || checkForDiagonalLines(column, row, checker);
     }
 
@@ -146,7 +168,7 @@ public class FourConnectGameLogic {
      * @param target The element to be matched.
      * @return {@code true} if there are four consecutive elements with specified value in a specified direction. {@code false} otherwise.
      */
-    private static boolean checkConsecutive(int startRow, int startCol, int rowIncrement, int colIncrement, String target) {
+    private boolean checkConsecutive(int startRow, int startCol, int rowIncrement, int colIncrement, String target) {
         for (int i = 0; i < 4; i++) {
             int row = startRow + i * rowIncrement;
             int col = startCol + i * colIncrement;
@@ -165,8 +187,8 @@ public class FourConnectGameLogic {
      * @param col Index of the column to be checked.
      * @return {@code true} if indices are valid. {@code false} otherwise.
      */
-    private static boolean isValidIndex(int row, int col) {
-        return row >= 0 && row < ROW_COUNT && col >= 0 && col < COLUMN_COUNT;
+    private boolean isValidIndex(int row, int col) {
+        return row >= 0 && row < numberOfRows && col >= 0 && col < numberOfColumns;
     }
 
     /**
@@ -175,11 +197,38 @@ public class FourConnectGameLogic {
      * @param column Index of the column to be checked.
      * @return {@code true} if column is full. {@code false} otherwise.
      */
-    public static boolean isColumnFull(int column) {
-        for (int row = 0; row < ROW_COUNT; row++) {
+    public boolean isColumnFull(int column) {
+        for (int row = 0; row < numberOfRows; row++) {
             if (field[row][column] == null) return false;
         }
         // all the elements in the column were not null(empty)
         return true;
+    }
+
+    /**
+     * Overwritten method to build the string representation of the current state of the field.
+     *
+     * @return string representation of the current state of the field.
+     */
+    @Override
+    public String toString() {
+        String resultString = "";
+        for (int rowCounter = 0; rowCounter < numberOfRows; rowCounter++) {
+            resultString += WHITESPACE;
+            for (int columnCounter = 0; columnCounter < numberOfColumns; columnCounter++) {
+                if (columnCounter == 0) {
+                    resultString += SIGN_SEPARATOR;
+                }
+                // print sign placeholder if no checker is in the slot
+                if (field[rowCounter][columnCounter] == null) {
+                    resultString += SIGN_PLACEHOLDER;
+                } else {
+                    resultString += field[rowCounter][columnCounter];
+                }
+                resultString += SIGN_SEPARATOR;
+            }
+            resultString += NEW_LINE;
+        }
+        return resultString;
     }
 }

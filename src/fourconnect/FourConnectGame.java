@@ -10,13 +10,6 @@ import static fourconnect.ErrorConstants.maxAmountOfPlayersError;
 import static fourconnect.ErrorConstants.signMustBeOneCharError;
 import static fourconnect.ErrorConstants.signsMustBeUniqueError;
 
-import static fourconnect.FourConnectGameLogic.ROW_COUNT;
-import static fourconnect.FourConnectGameLogic.COLUMN_COUNT;
-import static fourconnect.FourConnectGameLogic.isColumnFull;
-import static fourconnect.FourConnectGameLogic.getField;
-import static fourconnect.FourConnectGameLogic.putCheckerToColumn;
-import static fourconnect.FourConnectGameLogic.hasPlayerWon;
-
 /**
  * Static class that manages interactions with users and uses FourConnectGameLogic class to play the game.
  * Main class in the application.
@@ -27,10 +20,9 @@ import static fourconnect.FourConnectGameLogic.hasPlayerWon;
 public class FourConnectGame {
     private static final String PLAYER_1_DEFAULT_SIGN = "x";
     private static final String PLAYER_2_DEFAULT_SIGN = "o";
-    private static final String SIGN_SEPARATOR = "|";
-    private static final String SIGN_PLACEHOLDER = " ";
-    private static final String WHITESPACE = " ";
     private static final String QUIT_COMMAND = "quit";
+    private static final int ROW_COUNT = 6;
+    private static final int COLUMN_COUNT = 8;
     private static final Scanner scanner = new Scanner(System.in);
 
     /**
@@ -71,9 +63,11 @@ public class FourConnectGame {
     private static void startGame(ArrayList<String> players) {
         int numberOfPlayers = players.size();
 
-        printField();
+        GameField gameField = new GameField(ROW_COUNT, COLUMN_COUNT);
+        printField(gameField);
         int turnCount = 1;
         int column;
+        // the program will terminate as there are no empty slots more or someone wins, so the loop is not infinite
         while (true) {
             int playerIndex = turnCount % numberOfPlayers;
             // if turn count is divided by number of players by a whole
@@ -82,10 +76,10 @@ public class FourConnectGame {
 
             printTurn(turnCount, playerIndex);
             turnCount++;
-            column = inputColumn();
+            column = inputColumn(gameField);
 
-            int row = putCheckerToColumn(column - 1, players.get(playerIndex - 1));
-            printField();
+            int row = gameField.putCheckerToColumn(column - 1, players.get(playerIndex - 1));
+            printField(gameField);
 
             // when step count is exactly the area of the field, the game stops
             if (turnCount == ROW_COUNT * COLUMN_COUNT) {
@@ -94,7 +88,7 @@ public class FourConnectGame {
                 terminate();
             }
 
-            if(hasPlayerWon(column - 1, row, players.get(playerIndex - 1))) {
+            if(gameField.hasPlayerWon(column - 1, row, players.get(playerIndex - 1))) {
                 System.out.printf("Sieger: Spieler %s", players.get(playerIndex - 1));
                 terminate();
             }
@@ -140,26 +134,11 @@ public class FourConnectGame {
 
     /**
      * Prints the current state of the field.
+     *
+     * @param field Instance of GameField. Field to be printed.
      */
-    private static void printField() {
-        final String[][] field = getField();
-        for (int rowCounter = 0; rowCounter < ROW_COUNT; rowCounter++) {
-            System.out.print(WHITESPACE);
-            for (int columnCounter = 0; columnCounter < COLUMN_COUNT; columnCounter++) {
-                if (columnCounter == 0) {
-                    System.out.print(SIGN_SEPARATOR);
-                }
-                // print sign placeholder if no checker is in the slot
-                if (field[rowCounter][columnCounter] == null) {
-                    System.out.print(SIGN_PLACEHOLDER);
-                } else {
-                    System.out.print(field[rowCounter][columnCounter]);
-                }
-                System.out.print(SIGN_SEPARATOR);
-            }
-            // print new line
-            System.out.println();
-        }
+    private static void printField(GameField field) {
+        System.out.println(field);
     }
 
     /**
@@ -178,9 +157,10 @@ public class FourConnectGame {
      * Prints error messages if entered column is invalid, full or cannot be converted to integer.
      * Continues to read user input until quit command is used or valid column number received.
      *
+     * @param gameField Instance of GameField to check for full column.
      * @return Entered number
      */
-    private static int inputColumn() {
+    private static int inputColumn(GameField gameField) {
         while (true) {
             String input = scanner.nextLine();
             if (input.equals(QUIT_COMMAND)) terminate();
@@ -192,7 +172,7 @@ public class FourConnectGame {
                     printError(columnShouldBeInRangeError);
                 } else {
                     int columnIndex = number - 1;
-                    if (isColumnFull(columnIndex)) {
+                    if (gameField.isColumnFull(columnIndex)) {
                         printError(columnIsFullError);
                     }
                     else return number;
