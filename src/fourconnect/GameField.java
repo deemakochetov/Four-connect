@@ -4,16 +4,24 @@ import java.util.Objects;
 
 /**
  * Class that handles the state of the game field and operations with it.
+ *
+ * @author urhlc
  */
 public class GameField {
-    private final int numberOfRows;
-    private final int numberOfColumns;
-    private static String[][] field;
     private static final String SIGN_SEPARATOR = "|";
     private static final String SIGN_PLACEHOLDER = " ";
     private static final String WHITESPACE = " ";
     private static final String NEW_LINE = System.lineSeparator();
+    private static String[][] field;
+    private final int numberOfRows;
+    private final int numberOfColumns;
 
+    /**
+     * Initializes a new game field with specified dimensions.
+     *
+     * @param numberOfRows Number of rows the field should have.
+     * @param numberOfColumns Number of columns the field should have.
+     */
     public GameField(int numberOfRows, int numberOfColumns) {
         this.numberOfRows = numberOfRows;
         this.numberOfColumns = numberOfColumns;
@@ -64,12 +72,14 @@ public class GameField {
      * @param column Index of the column of the element that was added by the player last and therefore may be the part of the winning line.
      * @param row Index of the row of the element that was added by the player last and therefore may be the part of the winning line.
      * @param checker Sign of the user that was put into the slot.
-     * @return {@code true} if there is a vertical line (containing specified slot) of four specified elements in a row. {@code false} otherwise.
+     * @return {@code true} if there is a vertical line (containing specified slot) of four elements in a row. {@code false} otherwise.
      */
     private boolean checkForVerticalLines(int column, int row, String checker) {
         for (int minStartRow = 0; minStartRow <= row; minStartRow++) {
             int startingRow = Math.max(minStartRow, row - 3);
-            if (checkConsecutive(startingRow, column, 1, 0, checker)) return true;
+            if (checkConsecutive(startingRow, column, 1, 0, checker)) {
+                return true;
+            }
         }
         return false;
     }
@@ -81,12 +91,14 @@ public class GameField {
      * @param column Index of the column of the element that was added by the player last and therefore may be the part of the winning line.
      * @param row Index of the row of the element that was added by the player last and therefore may be the part of the winning line.
      * @param checker Sign of the user that was put into the slot.
-     * @return {@code true} if there is a horizontal line (containing specified slot) of four specified elements in a row. {@code false} otherwise.
+     * @return {@code true} if there is a horizontal line (containing specified slot) of four elements in a row. {@code false} otherwise.
      */
     private boolean checkForHorizontalLines(int column, int row, String checker) {
         for (int minStartColumn = 0; minStartColumn <= column; minStartColumn++) {
             int startingColumn = Math.max(minStartColumn, column - 3);
-            if (checkConsecutive(row, startingColumn, 0, 1, checker)) return true;
+            if (checkConsecutive(row, startingColumn, 0, 1, checker)) {
+                return true;
+            }
         }
         return false;
     }
@@ -98,7 +110,7 @@ public class GameField {
      * @param column Index of the column of the element that was added by the player last and therefore may be the part of the winning line.
      * @param row Index of the row of the element that was added by the player last and therefore may be the part of the winning line.
      * @param checker Sign of the user that was put into the slot.
-     * @return {@code true} if there is a diagonal line (containing specified slot) of four specified elements in a row. {@code false} otherwise.
+     * @return {@code true} if there is a diagonal line (containing specified slot) of four elements in a row. {@code false} otherwise.
      */
     private boolean checkForDiagonalLines(int column, int row, String checker) {
         // check diagonally (top-left to bottom-right)
@@ -124,18 +136,18 @@ public class GameField {
         if (row <= column) {
             int rowColumnDifference = row - column;
             // iterate over rows, calculating column based on the difference between them
-            for (int startingDiagonalRow = Math.max(row - 3, 0); startingDiagonalRow <= row; startingDiagonalRow++) {
+            for (int startRow = Math.max(row - 3, 0); startRow <= row; startRow++) {
                 // pass -1 as column increment as column is being iterated backwards
-                if (checkConsecutive(startingDiagonalRow, startingDiagonalRow - rowColumnDifference, 1, -1, checker)) {
+                if (checkConsecutive(startRow, startRow - rowColumnDifference, 1, -1, checker)) {
                     return true;
                 }
             }
         } else {
             int columnRowDifference = column - row;
             // iterate over columns, calculating row based on the difference between them
-            for (int startingDiagonalColumn = Math.min(column + 3, numberOfColumns - 1); startingDiagonalColumn >= column; startingDiagonalColumn--) {
+            for (int startColumn = Math.min(column + 3, numberOfColumns - 1); startColumn >= column; startColumn--) {
                 // pass -1 as column increment as column is being iterated backwards
-                if (checkConsecutive(startingDiagonalColumn - columnRowDifference, startingDiagonalColumn, 1, -1, checker)) {
+                if (checkConsecutive(startColumn - columnRowDifference, startColumn, 1, -1, checker)) {
                     return true;
                 }
             }
@@ -155,7 +167,11 @@ public class GameField {
      * @return {@code true} if player has met at least one of winning conditions. {@code false} otherwise.
      */
     public boolean hasPlayerWon(int column, int row, String checker) {
-        return checkForVerticalLines(column, row, checker) || checkForHorizontalLines(column, row, checker) || checkForDiagonalLines(column, row, checker);
+        boolean hasVerticalLines = checkForVerticalLines(column, row, checker);
+        boolean hasHorizontalLines = checkForHorizontalLines(column, row, checker);
+        boolean hasDiagonalLines = checkForDiagonalLines(column, row, checker);
+
+        return hasVerticalLines || hasHorizontalLines || hasDiagonalLines;
     }
 
     /**
@@ -199,7 +215,9 @@ public class GameField {
      */
     public boolean isColumnFull(int column) {
         for (int row = 0; row < numberOfRows; row++) {
-            if (field[row][column] == null) return false;
+            if (field[row][column] == null) {
+                return false;
+            }
         }
         // all the elements in the column were not null(empty)
         return true;

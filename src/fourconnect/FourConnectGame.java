@@ -3,33 +3,38 @@ package fourconnect;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import static fourconnect.ErrorConstants.inputIsNotAnIntError;
-import static fourconnect.ErrorConstants.columnShouldBeInRangeError;
-import static fourconnect.ErrorConstants.columnIsFullError;
-import static fourconnect.ErrorConstants.maxAmountOfPlayersError;
-import static fourconnect.ErrorConstants.signMustBeOneCharError;
-import static fourconnect.ErrorConstants.signsMustBeUniqueError;
+import static fourconnect.ErrorConstants.SIGNS_MUST_BE_UNIQUE_ERROR;
+import static fourconnect.ErrorConstants.SIGN_MUST_BE_ONE_CHAR_ERROR;
+import static fourconnect.ErrorConstants.MAX_AMOUNT_OF_PLAYERS_ERROR;
+import static fourconnect.ErrorConstants.COLUMN_IS_FULL_ERROR;
+import static fourconnect.ErrorConstants.COLUMN_SHOULD_BE_IN_RANGE_ERROR;
+import static fourconnect.ErrorConstants.INPUT_IS_NOT_AN_INT_ERROR;
 
 /**
  * Static class that manages interactions with users and uses FourConnectGameLogic class to play the game.
  * Main class in the application.
  *
- * @author Dmytro Kochetov
- * @version 1,0
+ * @author urhlc
  */
-public class FourConnectGame {
+public final class FourConnectGame {
     private static final String PLAYER_1_DEFAULT_SIGN = "x";
     private static final String PLAYER_2_DEFAULT_SIGN = "o";
     private static final String QUIT_COMMAND = "quit";
     private static final int ROW_COUNT = 6;
     private static final int COLUMN_COUNT = 8;
-    private static final Scanner scanner = new Scanner(System.in);
+    private static final Scanner SCANNER = new Scanner(System.in);
+
+    /**
+     * Empty constructor as utility classes must not be initialised.
+     */
+    private FourConnectGame() {
+    }
 
     /**
      * Validates command line arguments, sets player signs and starts the game.
-     *
-     * @param args The list of command arguments, that will be used as player signs,
      * If player signs are invalid error will be printed and program will be terminated.
+     *
+     * @param args The list of command arguments, that will be used as player signs.
      */
     public static void main(String[] args) { // add java doc
         ArrayList<String> players = new ArrayList<>();
@@ -38,14 +43,14 @@ public class FourConnectGame {
             players.add(PLAYER_2_DEFAULT_SIGN);
         }
         if (args.length > 6) {
-            printErrorAndTerminate(maxAmountOfPlayersError);
+            printErrorAndTerminate(MAX_AMOUNT_OF_PLAYERS_ERROR);
         }
         for (String player: args) {
             if (player.length() != 1) {
-                printErrorAndTerminate(signMustBeOneCharError);
+                printErrorAndTerminate(SIGN_MUST_BE_ONE_CHAR_ERROR);
             }
             if (players.contains(player)) {
-                printErrorAndTerminate(signsMustBeUniqueError);
+                printErrorAndTerminate(SIGNS_MUST_BE_UNIQUE_ERROR);
             }
             // add player if validation was passed successfully
             players.add(player);
@@ -72,7 +77,9 @@ public class FourConnectGame {
             int playerIndex = turnCount % numberOfPlayers;
             // if turn count is divided by number of players by a whole
             // set index to be the last player
-            if (playerIndex == 0) playerIndex = numberOfPlayers;
+            if (playerIndex == 0) {
+                playerIndex = numberOfPlayers;
+            }
 
             printTurn(turnCount, playerIndex);
             turnCount++;
@@ -88,8 +95,8 @@ public class FourConnectGame {
                 terminate();
             }
 
-            if(gameField.hasPlayerWon(column - 1, row, players.get(playerIndex - 1))) {
-                System.out.printf("Sieger: Spieler %s", players.get(playerIndex - 1));
+            if (gameField.hasPlayerWon(column - 1, row, players.get(playerIndex - 1))) {
+                System.out.printf("Sieger: Spieler %s", playerIndex);
                 terminate();
             }
         }
@@ -121,7 +128,7 @@ public class FourConnectGame {
      * @param code Code to be terminated with.
      */
     private static void terminate(int code) {
-        scanner.close();
+        SCANNER.close();
         System.exit(code);
     }
 
@@ -162,23 +169,26 @@ public class FourConnectGame {
      */
     private static int inputColumn(GameField gameField) {
         while (true) {
-            String input = scanner.nextLine();
-            if (input.equals(QUIT_COMMAND)) terminate();
+            String input = SCANNER.nextLine();
+            if (input.equals(QUIT_COMMAND)) {
+                terminate();
+            }
             int number;
             try {
                 number = Integer.parseInt(input);
 
-                if (isInValidRange(number)) {
-                    printError(columnShouldBeInRangeError);
+                if (!isInValidRange(number)) {
+                    printError(COLUMN_SHOULD_BE_IN_RANGE_ERROR);
                 } else {
                     int columnIndex = number - 1;
                     if (gameField.isColumnFull(columnIndex)) {
-                        printError(columnIsFullError);
+                        printError(COLUMN_IS_FULL_ERROR);
+                    } else {
+                        return number;
                     }
-                    else return number;
                 }
             } catch (NumberFormatException e) {
-                printError(inputIsNotAnIntError);
+                printError(INPUT_IS_NOT_AN_INT_ERROR);
             }
         }
     }
